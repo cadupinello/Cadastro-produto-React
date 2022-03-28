@@ -1,16 +1,25 @@
 import React from 'react' ;
 
+import ProdutoService from '../../app/ProdutoService'
+
 const estadoInicial = {
     nome: '',
     sku: '',
     descricao: '',
     preco: 0,
-    fornecedor: ''
+    fornecedor: '',
+    sucesso: false,
+    errors: []
 }
 
 class CadastroProduto extends React.Component {
-
+    //recuparando os valores dos campos
     state = estadoInicial;
+
+    constructor(){
+        super()
+        this.service = new ProdutoService();
+    }
 
     onChange = (event) => {
        const valor = event.target.value
@@ -19,9 +28,24 @@ class CadastroProduto extends React.Component {
     }
 
     onSubmit = (event) => {
-        console.log(this.state)
+        const produto = { 
+        nome: this.state.nome,
+        sku: this.state.sku,
+        descricao: this.state.descricao,
+        preco: this.state.preco,
+        fornecedor: this.state.fornecedor
+        }
+        try{
+            this.service.salvar(produto)
+            this.limpaCampo()
+            this.setState({sucesso: true})
+        }catch(erro){
+            const errors = erro.errors
+            this.setState({errors: errors})
+        }
+        
     }
-
+    //funcao para limpar todos os campos
     limpaCampo = () => {
         this.setState(estadoInicial)
     }
@@ -32,6 +56,27 @@ class CadastroProduto extends React.Component {
                 <div className="card-header p-3">
                     <p className="lead fw-bolder text-center"> Cadastro de Produto </p>
                 </div>
+                <div className="card-body"> 
+
+                {this.state.sucesso &&
+                <div class="alert alert-dismissible alert-success">
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <strong>Bem feito !</strong> Cadastro realizado com sucesso !
+                </div> 
+                }
+                
+                {this.state.errors.length > 0 &&
+
+                    this.state.errors.map( msg => {
+                        return (
+                            <div class="alert alert-dismissible alert-danger">
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            <strong>Erro !</strong> {msg}
+                            </div>
+                        )
+                    })
+                
+                }
 
                 <div className="row m-3">
                     <div className="col-md-6">
@@ -101,6 +146,7 @@ class CadastroProduto extends React.Component {
                     <div className="col-md-1">
                         <button type="button" onClick={this.limpaCampo} class="btn btn-danger">Limpar</button>
                     </div>
+                </div>
                 </div>
             </div>
 
